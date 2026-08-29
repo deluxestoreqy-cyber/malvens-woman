@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel de administración — MALVENS WOMAN</title>
+<meta name="robots" content="noindex, nofollow">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ivory:#FAF6F1; --ivory-deep:#F3EAE2; --blush:#EAD1C8; --rose:#C98F86;
+    --gold:#B08D57; --gold-light:#D9BD8D; --ink:#3A2C2E; --ink-soft:#7A6660;
+    --line:rgba(176,141,87,0.28); --shadow:0 10px 30px rgba(58,44,46,0.08);
+    --danger:#B95C50; --ok:#5C8A6A;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:var(--ivory-deep); color:var(--ink); font-family:'Jost',sans-serif; font-weight:300;}
+  h1,h2,h3{font-family:'Cormorant Garamond',serif; font-weight:600;}
+  input,textarea,select{font-family:'Jost',sans-serif; font-weight:300;}
+
+  #loginScreen{
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
+  }
+  .login-box{
+    background:var(--ivory); border-radius:10px; box-shadow:var(--shadow);
+    padding:44px 38px; width:100%; max-width:380px; text-align:center;
+  }
+  .login-box .eyebrow{font-size:0.7rem; letter-spacing:0.3em; text-transform:uppercase; color:var(--gold);}
+  .login-box h1{font-size:1.9rem; margin:10px 0 26px;}
+  .field{text-align:left; margin-bottom:16px;}
+  .field label{display:block; font-size:0.74rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:6px;}
+  .field input, .field textarea, .field select{
+    width:100%; padding:11px 14px; border:1px solid var(--line); border-radius:6px;
+    background:var(--ivory); color:var(--ink); font-size:0.92rem;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus{outline:none; border-color:var(--gold);}
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    padding:13px 26px; border-radius:999px; border:1px solid var(--ink);
+    background:var(--ink); color:var(--ivory); font-size:0.78rem; letter-spacing:0.14em;
+    text-transform:uppercase; cursor:pointer; width:100%; transition:opacity .2s ease;
+  }
+  .btn:hover{opacity:0.85;}
+  .btn-outline{background:transparent; color:var(--ink);}
+  .btn-danger{border-color:var(--danger); background:transparent; color:var(--danger);}
+  .btn-danger:hover{background:var(--danger); color:#fff;}
+  .btn-sm{width:auto; padding:8px 18px; font-size:0.68rem;}
+  .msg{font-size:0.82rem; margin-top:14px; min-height:1.2em;}
+  .msg.error{color:var(--danger);}
+  .msg.ok{color:var(--ok);}
+
+  #app{display:none; min-height:100vh;}
+  header{
+    background:var(--ivory); border-bottom:1px solid var(--line);
+    padding:18px 28px; display:flex; align-items:center; justify-content:space-between;
+    position:sticky; top:0; z-index:10;
+  }
+  header .brand{font-family:'Cormorant Garamond',serif; font-size:1.3rem; font-weight:600;}
+  header .brand span{color:var(--gold); font-style:italic;}
+  header .actions{display:flex; align-items:center; gap:14px;}
+  header .email{font-size:0.78rem; color:var(--ink-soft);}
+
+  main{max-width:1000px; margin:0 auto; padding:36px 24px 80px;}
+
+  .tabs{display:flex; gap:8px; margin-bottom:32px;}
+  .tab-btn{
+    padding:10px 22px; border-radius:999px; border:1px solid var(--line);
+    background:transparent; color:var(--ink-soft); font-size:0.78rem; letter-spacing:0.08em;
+    text-transform:uppercase; cursor:pointer; transition:all .2s ease;
+  }
+  .tab-btn.active{background:var(--ink); border-color:var(--ink); color:var(--ivory);}
+
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  .card{background:var(--ivory); border-radius:10px; box-shadow:var(--shadow); padding:28px; margin-bottom:24px;}
+  .card h2{font-size:1.4rem; margin-bottom:20px;}
+
+  .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  @media (max-width:600px){.grid-2{grid-template-columns:1fr;}}
+
+  .check-row{display:flex; align-items:center; gap:10px; margin-bottom:16px;}
+  .check-row input{width:auto;}
+
+  .preview-thumb{
+    width:70px; height:70px; border-radius:8px; object-fit:cover;
+    background:var(--ivory-deep); border:1px solid var(--line);
+  }
+
+  .prod-row{
+    display:flex; align-items:center; gap:16px; padding:14px 0; border-bottom:1px solid var(--line);
+  }
+  .prod-row:last-child{border-bottom:none;}
+  .prod-info{flex:1; min-width:0;}
+  .prod-name{font-family:'Cormorant Garamond',serif; font-size:1.15rem; font-weight:600;}
+  .prod-meta{font-size:0.8rem; color:var(--ink-soft); margin-top:2px;}
+  .prod-price{font-size:0.9rem;}
+  .prod-price .old{text-decoration:line-through; color:var(--ink-soft); margin-left:8px; font-size:0.8rem;}
+  .prod-actions{display:flex; gap:8px; flex-shrink:0;}
+  .icon-link{
+    background:none; border:none; cursor:pointer; color:var(--ink-soft);
+    font-size:0.76rem; text-decoration:underline; padding:4px;
+  }
+  .icon-link:hover{color:var(--ink);}
+  .icon-link.danger:hover{color:var(--danger);}
+
+  .empty-note{color:var(--ink-soft); font-size:0.88rem; text-align:center; padding:20px 0;}
+
+  .logo-slot{
+    display:flex; align-items:center; gap:20px; padding:18px; border:1px dashed var(--line);
+    border-radius:8px; margin-bottom:18px;
+  }
+  .logo-slot img{max-height:50px; max-width:160px; object-fit:contain;}
+  .logo-slot.dark-bg{background:var(--ink);}
+  .logo-slot-label{flex:1;}
+  .logo-slot-label strong{display:block; font-size:0.9rem; margin-bottom:4px;}
+  .logo-slot-label span{font-size:0.78rem; color:var(--ink-soft);}
+  .logo-slot.dark-bg .logo-slot-label span{color:rgba(250,246,241,0.6);}
+  .logo-slot.dark-bg .logo-slot-label strong{color:var(--ivory);}
+
+  .toast{
+    position:fixed; bottom:26px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--ink); color:var(--ivory); padding:13px 24px; border-radius:999px;
+    font-size:0.82rem; z-index:100; opacity:0; pointer-events:none; transition:all .3s ease;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  .toast.error{background:var(--danger);}
+
+  .form-actions{display:flex; gap:10px; margin-top:6px;}
+  .form-actions .btn{width:auto;}
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-box">
+    <span class="eyebrow">Malvens Woman</span>
+    <h1>Panel de administración</h1>
+    <form id="loginForm">
+      <div class="field">
+        <label for="loginEmail">Email</label>
+        <input type="email" id="loginEmail" required autocomplete="username">
+      </div>
+      <div class="field">
+        <label for="loginPass">Contraseña</label>
+        <input type="password" id="loginPass" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn">Iniciar sesión</button>
+      <p class="msg error" id="loginMsg"></p>
+    </form>
+  </div>
+</div>
+
+<div id="app">
+  <header>
+    <span class="brand">MALVENS <span>Admin</span></span>
+    <div class="actions">
+      <span class="email" id="userEmail"></span>
+      <button class="btn btn-outline btn-sm" id="logoutBtn">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="productos">Productos</button>
+      <button class="tab-btn" data-tab="marca">Marca (logo)</button>
+    </div>
+
+    <section class="panel active" id="panel-productos">
+      <div class="card">
+        <h2 id="formTitle">Agregar producto</h2>
+        <form id="productForm">
+          <input type="hidden" id="prodId">
+          <div class="grid-2">
+            <div class="field">
+              <label for="prodName">Nombre</label>
+              <input type="text" id="prodName" required placeholder="Ej: Anillo Hilo de Luna">
+            </div>
+            <div class="field">
+              <label for="prodCat">Categoría</label>
+              <select id="prodCat" required></select>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="field">
+              <label for="prodPrice">Precio (Gs.)</label>
+              <input type="number" id="prodPrice" required min="0" placeholder="Ej: 65000">
+            </div>
+            <div class="field">
+              <label for="prodOldPrice">Precio anterior (oferta, opcional)</label>
+              <input type="number" id="prodOldPrice" min="0" placeholder="Dejar vacío si no hay oferta">
+            </div>
+          </div>
+          <div class="field">
+            <label for="prodDesc">Descripción</label>
+            <textarea id="prodDesc" rows="3" placeholder="Breve descripción de la pieza (opcional)"></textarea>
+          </div>
+          <div class="field">
+            <label for="prodImage">Foto del producto</label>
+            <input type="file" id="prodImage" accept="image/*">
+            <div id="prodImagePreviewWrap" style="margin-top:10px; display:none;">
+              <img id="prodImagePreview" class="preview-thumb">
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn" id="prodSubmitBtn" style="width:auto;">Guardar producto</button>
+            <button type="button" class="btn btn-outline" id="prodCancelBtn" style="width:auto; display:none;">Cancelar edición</button>
+          </div>
+          <p class="msg" id="prodMsg"></p>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Catálogo actual</h2>
+        <div id="prodList"><p class="empty-note">Cargando productos…</p></div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-marca">
+      <div class="card">
+        <h2>Logo de la marca</h2>
+        <p style="color:var(--ink-soft); font-size:0.88rem; margin-bottom:20px;">
+          Subí dos versiones: una para fondos claros (header) y otra en blanco para fondos oscuros (footer). El formato PNG con fondo transparente es el que mejor va a quedar.
+        </p>
+
+        <div class="logo-slot">
+          <div class="logo-slot-label">
+            <strong>Logo — fondo claro (header)</strong>
+            <span>Se usa en la barra superior de la página</span>
+          </div>
+          <img id="logoDarkPreview" src="assets/malvens-logo.png" alt="Logo actual">
+        </div>
+        <div class="field">
+          <input type="file" id="logoDarkInput" accept="image/*">
+        </div>
+
+        <div class="logo-slot dark-bg">
+          <div class="logo-slot-label">
+            <strong>Logo — versión blanca (footer)</strong>
+            <span>Se usa sobre el fondo oscuro del pie de página</span>
+          </div>
+          <img id="logoWhitePreview" src="assets/malvens-logo-white.png" alt="Logo blanco actual">
+        </div>
+        <div class="field">
+          <input type="file" id="logoWhiteInput" accept="image/*">
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn" id="saveLogosBtn" style="width:auto;">Guardar logo</button>
+        </div>
+        <p class="msg" id="logoMsg"></p>
+      </div>
+
+      <div class="card">
+        <h2>Contacto</h2>
+        <p style="color:var(--ink-soft); font-size:0.88rem; margin-bottom:20px;">
+          Este es el número al que llegan los pedidos del carrito de la página.
+        </p>
+        <div class="field">
+          <label for="whatsappInput">Número de WhatsApp (con código de país, sin +, sin espacios)</label>
+          <input type="text" id="whatsappInput" placeholder="Ej: 595982901759">
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn" id="saveContactBtn" style="width:auto;">Guardar número</button>
+        </div>
+        <p class="msg" id="contactMsg"></p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+import {
+  getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+import {
+  getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot,
+  setDoc, getDoc, orderBy, query
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+import { firebaseConfig, CATEGORIES } from "./assets/firebase-config.js";
+import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET } from "./assets/cloudinary-config.js";
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+async function uploadToCloudinary(file, folder){
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+  formData.append("folder", folder);
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+    method: "POST",
+    body: formData
+  });
+  if(!res.ok){
+    throw new Error("No se pudo subir la imagen a Cloudinary");
+  }
+  const json = await res.json();
+  return json.secure_url;
+}
+
+const fmt = n => "Gs. " + Number(n).toLocaleString("es-PY");
+
+let toastTimer;
+function showToast(text, isError=false){
+  const el = document.getElementById("toast");
+  el.textContent = text;
+  el.classList.toggle("error", isError);
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> el.classList.remove("show"), 2400);
+}
+
+const loginScreen = document.getElementById("loginScreen");
+const appShell = document.getElementById("app");
+const loginForm = document.getElementById("loginForm");
+const loginMsg = document.getElementById("loginMsg");
+
+loginForm.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  loginMsg.textContent = "";
+  const email = document.getElementById("loginEmail").value.trim();
+  const pass = document.getElementById("loginPass").value;
+  try{
+    await signInWithEmailAndPassword(auth, email, pass);
+  }catch(err){
+    loginMsg.textContent = "No pudimos iniciar sesión. Revisá tu email y contraseña.";
+  }
+});
+
+document.getElementById("logoutBtn").addEventListener("click", ()=> signOut(auth));
+
+onAuthStateChanged(auth, (user)=>{
+  if(user){
+    loginScreen.style.display = "none";
+    appShell.style.display = "block";
+    document.getElementById("userEmail").textContent = user.email;
+    startProductListener();
+    loadBranding();
+  }else{
+    loginScreen.style.display = "flex";
+    appShell.style.display = "none";
+  }
+});
+
+document.querySelectorAll(".tab-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("panel-"+btn.dataset.tab).classList.add("active");
+  });
+});
+
+const catSelect = document.getElementById("prodCat");
+catSelect.innerHTML = CATEGORIES.map(c=>`<option value="${c}">${c}</option>`).join("");
+
+const productForm = document.getElementById("productForm");
+const prodMsg = document.getElementById("prodMsg");
+const prodSubmitBtn = document.getElementById("prodSubmitBtn");
+const prodCancelBtn = document.getElementById("prodCancelBtn");
+const formTitle = document.getElementById("formTitle");
+let editingId = null;
+let pendingImageFile = null;
+
+document.getElementById("prodImage").addEventListener("change", (e)=>{
+  const file = e.target.files[0];
+  pendingImageFile = file || null;
+  const wrap = document.getElementById("prodImagePreviewWrap");
+  const img = document.getElementById("prodImagePreview");
+  if(file){
+    img.src = URL.createObjectURL(file);
+    wrap.style.display = "block";
+  }else{
+    wrap.style.display = "none";
+  }
+});
+
+function resetForm(){
+  editingId = null;
+  pendingImageFile = null;
+  productForm.reset();
+  document.getElementById("prodImagePreviewWrap").style.display = "none";
+  formTitle.textContent = "Agregar producto";
+  prodSubmitBtn.textContent = "Guardar producto";
+  prodCancelBtn.style.display = "none";
+  prodMsg.textContent = "";
+}
+
+prodCancelBtn.addEventListener("click", resetForm);
+
+productForm.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  prodSubmitBtn.disabled = true;
+  prodMsg.className = "msg";
+  prodMsg.textContent = "Guardando…";
+
+  try{
+    const data = {
+      name: document.getElementById("prodName").value.trim(),
+      cat: document.getElementById("prodCat").value,
+      price: Number(document.getElementById("prodPrice").value),
+      oldPrice: document.getElementById("prodOldPrice").value ? Number(document.getElementById("prodOldPrice").value) : null,
+      description: document.getElementById("prodDesc").value.trim(),
+      updatedAt: Date.now()
+    };
+
+    if(pendingImageFile){
+      data.imageUrl = await uploadToCloudinary(pendingImageFile, "malvens/products");
+    }
+
+    if(editingId){
+      await updateDoc(doc(db, "products", editingId), data);
+      showToast("Producto actualizado");
+    }else{
+      data.createdAt = Date.now();
+      await addDoc(collection(db, "products"), data);
+      showToast("Producto agregado");
+    }
+    resetForm();
+  }catch(err){
+    prodMsg.classList.add("error");
+    prodMsg.textContent = "Ocurrió un error al guardar. Probá de nuevo.";
+    showToast("Error al guardar el producto", true);
+  }finally{
+    prodSubmitBtn.disabled = false;
+  }
+});
+
+let currentProducts = [];
+
+function startProductListener(){
+  const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
+  onSnapshot(q, (snap)=>{
+    currentProducts = [];
+    snap.forEach(d=> currentProducts.push({id:d.id, ...d.data()}));
+    renderProductList();
+  }, ()=>{
+    document.getElementById("prodList").innerHTML = '<p class="empty-note">No se pudo cargar el catálogo.</p>';
+  });
+}
+
+function renderProductList(){
+  const el = document.getElementById("prodList");
+  if(currentProducts.length === 0){
+    el.innerHTML = '<p class="empty-note">Todavía no agregaste productos.</p>';
+    return;
+  }
+  el.innerHTML = currentProducts.map(p => `
+    <div class="prod-row">
+      <img class="preview-thumb" src="${p.imageUrl || ''}" onerror="this.style.visibility='hidden'" style="${p.imageUrl ? '' : 'visibility:hidden;'}">
+      <div class="prod-info">
+        <div class="prod-name">${p.name}</div>
+        <div class="prod-meta">${p.cat}</div>
+        <div class="prod-price">${fmt(p.price)} ${p.oldPrice ? `<span class="old">${fmt(p.oldPrice)}</span>` : ''}</div>
+      </div>
+      <div class="prod-actions">
+        <button class="icon-link" data-edit="${p.id}">Editar</button>
+        <button class="icon-link danger" data-del="${p.id}">Borrar</button>
+      </div>
+    </div>
+  `).join("");
+
+  el.querySelectorAll("[data-edit]").forEach(btn=>{
+    btn.addEventListener("click", ()=> editProduct(btn.dataset.edit));
+  });
+  el.querySelectorAll("[data-del]").forEach(btn=>{
+    btn.addEventListener("click", ()=> deleteProduct(btn.dataset.del));
+  });
+}
+
+function editProduct(id){
+  const p = currentProducts.find(x=>x.id===id);
+  if(!p) return;
+  editingId = id;
+  document.getElementById("prodName").value = p.name || "";
+  document.getElementById("prodCat").value = p.cat || CATEGORIES[0];
+  document.getElementById("prodPrice").value = p.price || "";
+  document.getElementById("prodOldPrice").value = p.oldPrice || "";
+  document.getElementById("prodDesc").value = p.description || "";
+  const wrap = document.getElementById("prodImagePreviewWrap");
+  const img = document.getElementById("prodImagePreview");
+  if(p.imageUrl){ img.src = p.imageUrl; wrap.style.display = "block"; }
+  else{ wrap.style.display = "none"; }
+  formTitle.textContent = "Editar producto";
+  prodSubmitBtn.textContent = "Guardar cambios";
+  prodCancelBtn.style.display = "inline-flex";
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+async function deleteProduct(id){
+  if(!confirm("¿Borrar este producto del catálogo?")) return;
+  try{
+    await deleteDoc(doc(db, "products", id));
+    showToast("Producto borrado");
+    if(editingId === id) resetForm();
+  }catch(err){
+    showToast("No se pudo borrar el producto", true);
+  }
+}
+
+let pendingLogoDark = null;
+let pendingLogoWhite = null;
+
+document.getElementById("logoDarkInput").addEventListener("change", (e)=>{
+  pendingLogoDark = e.target.files[0] || null;
+  if(pendingLogoDark) document.getElementById("logoDarkPreview").src = URL.createObjectURL(pendingLogoDark);
+});
+document.getElementById("logoWhiteInput").addEventListener("change", (e)=>{
+  pendingLogoWhite = e.target.files[0] || null;
+  if(pendingLogoWhite) document.getElementById("logoWhitePreview").src = URL.createObjectURL(pendingLogoWhite);
+});
+
+async function loadBranding(){
+  try{
+    const snap = await getDoc(doc(db, "settings", "site"));
+    if(snap.exists()){
+      const data = snap.data();
+      if(data.logoUrl) document.getElementById("logoDarkPreview").src = data.logoUrl;
+      if(data.logoWhiteUrl) document.getElementById("logoWhitePreview").src = data.logoWhiteUrl;
+      if(data.whatsappNumber) document.getElementById("whatsappInput").value = data.whatsappNumber;
+    }
+  }catch(err){ /* keep default preview */ }
+}
+
+document.getElementById("saveContactBtn").addEventListener("click", async ()=>{
+  const contactMsg = document.getElementById("contactMsg");
+  const raw = document.getElementById("whatsappInput").value.trim();
+  const digitsOnly = raw.replace(/\D/g, "");
+  contactMsg.className = "msg";
+  if(!digitsOnly || digitsOnly.length < 8){
+    contactMsg.classList.add("error");
+    contactMsg.textContent = "Ingresá un número válido, solo números (código de país + número).";
+    return;
+  }
+  contactMsg.textContent = "Guardando…";
+  try{
+    await setDoc(doc(db, "settings", "site"), { whatsappNumber: digitsOnly }, { merge: true });
+    document.getElementById("whatsappInput").value = digitsOnly;
+    contactMsg.classList.add("ok");
+    contactMsg.textContent = "Número actualizado.";
+    showToast("Número de WhatsApp actualizado");
+  }catch(err){
+    contactMsg.classList.add("error");
+    contactMsg.textContent = "No se pudo guardar el número.";
+    showToast("Error al guardar el número", true);
+  }
+});
+
+document.getElementById("saveLogosBtn").addEventListener("click", async ()=>{
+  const logoMsg = document.getElementById("logoMsg");
+  logoMsg.className = "msg";
+  logoMsg.textContent = "Guardando…";
+  try{
+    const update = {};
+    if(pendingLogoDark){
+      update.logoUrl = await uploadToCloudinary(pendingLogoDark, "malvens/branding");
+    }
+    if(pendingLogoWhite){
+      update.logoWhiteUrl = await uploadToCloudinary(pendingLogoWhite, "malvens/branding");
+    }
+    if(Object.keys(update).length === 0){
+      logoMsg.textContent = "Elegí al menos un archivo para actualizar.";
+      return;
+    }
+    await setDoc(doc(db, "settings", "site"), update, { merge: true });
+    logoMsg.classList.add("ok");
+    logoMsg.textContent = "Logo actualizado.";
+    showToast("Logo actualizado");
+    pendingLogoDark = null;
+    pendingLogoWhite = null;
+  }catch(err){
+    logoMsg.classList.add("error");
+    logoMsg.textContent = "No se pudo guardar el logo.";
+    showToast("Error al guardar el logo", true);
+  }
+});
+</script>
+</body>
+</html>
