@@ -192,6 +192,10 @@
             </div>
           </div>
           <div class="field">
+            <label for="prodStock">Cantidad disponible</label>
+            <input type="number" id="prodStock" required min="0" step="1" value="1">
+          </div>
+          <div class="field">
             <label for="prodDesc">Descripción</label>
             <textarea id="prodDesc" rows="3" placeholder="Breve descripción de la pieza (opcional)"></textarea>
           </div>
@@ -405,6 +409,7 @@ productForm.addEventListener("submit", async (e)=>{
       cat: document.getElementById("prodCat").value,
       price: Number(document.getElementById("prodPrice").value),
       oldPrice: document.getElementById("prodOldPrice").value ? Number(document.getElementById("prodOldPrice").value) : null,
+      stock: Number(document.getElementById("prodStock").value),
       description: document.getElementById("prodDesc").value.trim(),
       updatedAt: Date.now()
     };
@@ -457,6 +462,7 @@ function renderProductList(){
         <div class="prod-name">${p.name}</div>
         <div class="prod-meta">${p.cat}</div>
         <div class="prod-price">${fmt(p.price)} ${p.oldPrice ? `<span class="old">${fmt(p.oldPrice)}</span>` : ''}</div>
+        <div class="prod-meta" style="${(p.stock === 0) ? 'color:#B5433C; font-weight:600;' : ''}">${p.stock === 0 ? 'Agotado' : `Stock: ${p.stock ?? '—'}`}</div>
       </div>
       <div class="prod-actions">
         <button class="icon-link" data-edit="${p.id}">Editar</button>
@@ -481,6 +487,7 @@ function editProduct(id){
   document.getElementById("prodCat").value = p.cat || CATEGORIES[0];
   document.getElementById("prodPrice").value = p.price || "";
   document.getElementById("prodOldPrice").value = p.oldPrice || "";
+  document.getElementById("prodStock").value = (p.stock !== undefined && p.stock !== null) ? p.stock : 1;
   document.getElementById("prodDesc").value = p.description || "";
   const wrap = document.getElementById("prodImagePreviewWrap");
   const img = document.getElementById("prodImagePreview");

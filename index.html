@@ -266,6 +266,9 @@
   }
   .add-btn:hover{background:var(--ink); color:var(--ivory);}
   .add-btn.added{background:var(--gold); border-color:var(--gold); color:#fff;}
+  .add-btn[disabled]{opacity:0.45; cursor:not-allowed; border-color:var(--ink-soft); color:var(--ink-soft);}
+  .add-btn[disabled]:hover{background:transparent; color:var(--ink-soft);}
+  .stock-note{font-size:0.72rem; color:var(--rose); font-weight:500;}
 
   /* ---------- Info strip ---------- */
   .strip{
@@ -609,10 +612,13 @@ function renderGrid(){
   if(activeFilter === "Ofertas") items = items.filter(p=>p.oldPrice);
   else if(activeFilter !== "Todo") items = items.filter(p=>p.cat===activeFilter);
 
-  grid.innerHTML = items.map(p => `
+  grid.innerHTML = items.map(p => {
+    const stock = (p.stock === undefined || p.stock === null) ? Infinity : p.stock;
+    const soldOut = stock <= 0;
+    return `
     <div class="card">
       <div class="card-media">
-        ${p.oldPrice ? '<span class="badge">Oferta</span>' : ''}
+        ${soldOut ? '<span class="badge" style="background:#8a8a8a;">Agotado</span>' : (p.oldPrice ? '<span class="badge">Oferta</span>' : '')}
         ${mediaHTML(p)}
       </div>
       <div class="card-body">
@@ -623,12 +629,14 @@ function renderGrid(){
           <span class="price">${fmt(p.price)}</span>
           ${p.oldPrice ? `<span class="price-old">${fmt(p.oldPrice)}</span>` : ''}
         </div>
-        <button class="add-btn" data-id="${p.id}">Agregar al carrito</button>
+        ${(!soldOut && stock <= 3 && stock !== Infinity) ? `<span class="stock-note">¡Últimas ${stock} unidades!</span>` : ''}
+        <button class="add-btn" data-id="${p.id}" ${soldOut ? 'disabled' : ''}>${soldOut ? 'Agotado' : 'Agregar al carrito'}</button>
       </div>
     </div>
-  `).join("");
+  `;
+  }).join("");
 
-  grid.querySelectorAll(".add-btn").forEach(btn=>{
+  grid.querySelectorAll(".add-btn:not([disabled])").forEach(btn=>{
     btn.addEventListener("click", ()=>{
       addToCart(btn.dataset.id);
       btn.textContent = "Agregado ✓";
@@ -639,10 +647,21 @@ function renderGrid(){
 }
 
 /* ---------- Cart logic ---------- */
+function stockOf(id){
+  const p = PRODUCTS.find(pr=>pr.id===id);
+  if(!p) return Infinity;
+  return (p.stock === undefined || p.stock === null) ? Infinity : p.stock;
+}
+
 function addToCart(id){
+  const max = stockOf(id);
   const existing = cart.find(i=>i.id===id);
-  if(existing) existing.qty += 1;
-  else cart.push({id, qty:1});
+  if(existing){
+    if(existing.qty < max) existing.qty += 1;
+    else { showToast("No hay más stock disponible de esta pieza"); return; }
+  }else{
+    cart.push({id, qty:1});
+  }
   updateCartUI();
   showToast("Se agregó a tu carrito");
 }
@@ -650,6 +669,11 @@ function addToCart(id){
 function changeQty(id, delta){
   const item = cart.find(i=>i.id===id);
   if(!item) return;
+  const max = stockOf(id);
+  if(delta > 0 && item.qty >= max){
+    showToast("No hay más stock disponible de esta pieza");
+    return;
+  }
   item.qty += delta;
   if(item.qty <= 0) cart = cart.filter(i=>i.id!==id);
   updateCartUI();
