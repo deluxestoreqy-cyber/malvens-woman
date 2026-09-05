@@ -543,14 +543,10 @@
 <script type="module">
 import { firebaseConfig, CATEGORY_ICON } from "./assets/firebase-config.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-import { initializeFirestore, collection, query, orderBy, onSnapshot, doc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+import { getFirestore, collection, query, orderBy, onSnapshot, doc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
 const app = initializeApp(firebaseConfig);
-const db = initializeFirestore(app, {
-  experimentalForceLongPolling: true,
-  experimentalLongPollingOptions: { timeoutSeconds: 5 },
-  useFetchStreams: false
-});
+const db = getFirestore(app, "default"); // nombre real de la base de datos del proyecto
 
 let WHATSAPP_NUMBER = "595982901759"; // valor de respaldo hasta que cargue el configurado en el panel
 
