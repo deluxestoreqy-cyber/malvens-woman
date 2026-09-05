@@ -70,7 +70,7 @@ document.getElementById("writeBtn").addEventListener("click", async ()=>{
 
   try{
     const token = await auth.currentUser.getIdToken();
-    const url = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents/test`;
+    const url = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/default/documents/test`;
     const res = await fetch(url, {
       method: "POST",
       headers: {
