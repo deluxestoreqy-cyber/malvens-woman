@@ -285,7 +285,11 @@ import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET } from "./assets/cloudi
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = initializeFirestore(app, { experimentalForceLongPolling: true, useFetchStreams: false });
+const db = initializeFirestore(app, {
+  experimentalForceLongPolling: true,
+  experimentalLongPollingOptions: { timeoutSeconds: 5 },
+  useFetchStreams: false
+});
 
 async function uploadToCloudinary(file, folder){
   const formData = new FormData();

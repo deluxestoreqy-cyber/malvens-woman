@@ -546,7 +546,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/fireba
 import { initializeFirestore, collection, query, orderBy, onSnapshot, doc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
 const app = initializeApp(firebaseConfig);
-const db = initializeFirestore(app, { experimentalForceLongPolling: true, useFetchStreams: false });
+const db = initializeFirestore(app, {
+  experimentalForceLongPolling: true,
+  experimentalLongPollingOptions: { timeoutSeconds: 5 },
+  useFetchStreams: false
+});
 
 let WHATSAPP_NUMBER = "595982901759"; // valor de respaldo hasta que cargue el configurado en el panel
 
