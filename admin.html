@@ -94,6 +94,10 @@
   .prod-info{flex:1; min-width:0;}
   .prod-name{font-family:'Cormorant Garamond',serif; font-size:1.15rem; font-weight:600;}
   .prod-meta{font-size:0.8rem; color:var(--ink-soft); margin-top:2px;}
+  .prod-filters{display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;}
+  .prod-search-input{flex:1; min-width:180px; padding:10px 14px; border:1px solid var(--line); border-radius:8px; font-family:'Jost',sans-serif; font-size:0.92rem; background:var(--ivory);}
+  .prod-cat-select{padding:10px 14px; border:1px solid var(--line); border-radius:8px; font-family:'Jost',sans-serif; font-size:0.92rem; background:var(--ivory); color:var(--ink);}
+  .prod-search-input:focus, .prod-cat-select:focus{outline:none; border-color:var(--gold);}
   .prod-price{font-size:0.9rem;}
   .prod-price .old{text-decoration:line-through; color:var(--ink-soft); margin-left:8px; font-size:0.8rem;}
   .prod-actions{display:flex; gap:8px; flex-shrink:0;}
@@ -216,6 +220,12 @@
 
       <div class="card">
         <h2>Catálogo actual</h2>
+        <div class="prod-filters">
+          <input type="text" id="prodSearch" placeholder="Buscar por nombre…" class="prod-search-input">
+          <select id="prodCatFilter" class="prod-cat-select">
+            <option value="">Todas las categorías</option>
+          </select>
+        </div>
         <div id="prodList"><p class="empty-note">Cargando productos…</p></div>
       </div>
     </section>
@@ -437,6 +447,28 @@ productForm.addEventListener("submit", async (e)=>{
 });
 
 let currentProducts = [];
+let prodSearchTerm = "";
+let prodCatFilterValue = "";
+
+function populateCatFilter(){
+  const sel = document.getElementById("prodCatFilter");
+  CATEGORIES.forEach(cat=>{
+    const opt = document.createElement("option");
+    opt.value = cat;
+    opt.textContent = cat;
+    sel.appendChild(opt);
+  });
+}
+populateCatFilter();
+
+document.getElementById("prodSearch").addEventListener("input", (e)=>{
+  prodSearchTerm = e.target.value.trim().toLowerCase();
+  renderProductList();
+});
+document.getElementById("prodCatFilter").addEventListener("change", (e)=>{
+  prodCatFilterValue = e.target.value;
+  renderProductList();
+});
 
 function startProductListener(){
   const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
@@ -451,11 +483,21 @@ function startProductListener(){
 
 function renderProductList(){
   const el = document.getElementById("prodList");
+
+  let items = currentProducts;
+  if(prodCatFilterValue) items = items.filter(p => p.cat === prodCatFilterValue);
+  if(prodSearchTerm) items = items.filter(p => (p.name || "").toLowerCase().includes(prodSearchTerm));
+
   if(currentProducts.length === 0){
     el.innerHTML = '<p class="empty-note">Todavía no agregaste productos.</p>';
     return;
   }
-  el.innerHTML = currentProducts.map(p => `
+  if(items.length === 0){
+    el.innerHTML = '<p class="empty-note">No se encontraron productos con ese filtro.</p>';
+    return;
+  }
+
+  el.innerHTML = items.map(p => `
     <div class="prod-row">
       <img class="preview-thumb" src="${p.imageUrl || ''}" onerror="this.style.visibility='hidden'" style="${p.imageUrl ? '' : 'visibility:hidden;'}">
       <div class="prod-info">
