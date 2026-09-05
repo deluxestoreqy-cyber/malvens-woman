@@ -136,7 +136,19 @@
       radial-gradient(circle at 85% 75%, var(--blush) 0%, transparent 42%);
     opacity:0.7; z-index:0;
   }
-  .hero-content{position:relative; z-index:1; max-width:720px;}
+  .hero.has-image::before{display:none;}
+  .hero-bg{
+    position:absolute; inset:0; z-index:0;
+    background-size:cover; background-position:center;
+    display:none;
+  }
+  .hero-bg-overlay{
+    position:absolute; inset:0; z-index:0;
+    background:rgba(250,246,241,0.58);
+    display:none;
+  }
+  .hero.has-image .hero-bg, .hero.has-image .hero-bg-overlay{display:block;}
+  .hero-content{position:relative; z-index:2; max-width:720px;}
   .hero .eyebrow{margin-bottom:22px; display:inline-block;}
   .hero h1{
     font-size:clamp(3rem, 8vw, 5.6rem);
@@ -431,13 +443,15 @@
 
 <!-- ============ HERO ============ -->
 <section class="hero" id="top">
+  <div class="hero-bg" id="heroBg"></div>
+  <div class="hero-bg-overlay" id="heroBgOverlay"></div>
   <div class="hero-content">
-    <span class="eyebrow">@malvenswoman.py</span>
-    <h1>Piezas que <em>acompañan</em><br>tu historia</h1>
+    <span class="eyebrow" id="heroEyebrowText">@malvenswoman.py</span>
+    <h1 id="heroTitleText">Piezas que <em>acompañan</em><br>tu historia</h1>
     <div class="hero-ornament thread">
       <svg width="120" height="20" viewBox="0 0 120 20"><line x1="0" y1="10" x2="46" y2="10" class="thread-line"/><circle cx="60" cy="10" r="3" class="thread-dot"/><line x1="74" y1="10" x2="120" y2="10" class="thread-line"/></svg>
     </div>
-    <p>Jewelry y accesorios delicados, pensados para el día a día y para los momentos que querés recordar. Diseño simple, brillo justo.</p>
+    <p id="heroSubtitleText">Jewelry y accesorios delicados, pensados para el día a día y para los momentos que querés recordar. Diseño simple, brillo justo.</p>
     <a href="#catalogo" class="btn">Ver catálogo</a>
   </div>
 </section>
@@ -447,7 +461,7 @@
 <!-- ============ BRAND STORY ============ -->
 <section id="nosotras">
   <div class="section-inner story reveal">
-    <div class="story-visual">
+    <div class="story-visual" id="storyVisualBox">
       <svg viewBox="0 0 120 120" fill="none">
         <circle cx="60" cy="46" r="20" stroke="#B08D57" stroke-width="1.4"/>
         <path d="M45 50C48 60 72 60 75 50" stroke="#B08D57" stroke-width="1.2"/>
@@ -456,11 +470,13 @@
       </svg>
     </div>
     <div class="story-text">
-      <span class="eyebrow">Nuestra esencia</span>
-      <h2>Delicadeza con carácter</h2>
-      <p>MALVENS WOMAN nació de las ganas de crear piezas que se sientan propias: anillos, aretes, collares y pulseras pensados para combinarse entre sí y acompañar cualquier look, del casual al de fiesta.</p>
-      <p>Cada colección se elige con cuidado, priorizando materiales durables y diseños atemporales que no pasan de moda.</p>
-      <p class="story-sign">— Equipo Malvens</p>
+      <span class="eyebrow" id="storyEyebrowText">Nuestra esencia</span>
+      <h2 id="storyTitleText">Delicadeza con carácter</h2>
+      <div id="storyParagraphs">
+        <p>MALVENS WOMAN nació de las ganas de crear piezas que se sientan propias: anillos, aretes, collares y pulseras pensados para combinarse entre sí y acompañar cualquier look, del casual al de fiesta.</p>
+        <p>Cada colección se elige con cuidado, priorizando materiales durables y diseños atemporales que no pasan de moda.</p>
+      </div>
+      <p class="story-sign" id="storySignText">— Equipo Malvens</p>
     </div>
   </div>
 </section>
@@ -812,10 +828,17 @@ onSnapshot(productsQuery, (snapshot)=>{
   document.getElementById("grid").innerHTML = `<div class="grid-status">No pudimos cargar el catálogo en este momento. Probá de nuevo en unos minutos.</div>`;
 });
 
-/* ---------- Firebase: logo y contacto del sitio en tiempo real ---------- */
+/* ---------- Firebase: logo, contacto, contenido y colores del sitio en tiempo real ---------- */
+function escapeHtml(str){
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
 onSnapshot(doc(db, "settings", "site"), (snap)=>{
   if(!snap.exists()) return;
   const data = snap.data();
+
   if(data.logoUrl) document.getElementById("headerLogo").src = data.logoUrl;
   if(data.logoWhiteUrl) document.getElementById("footerLogo").src = data.logoWhiteUrl;
   if(data.whatsappNumber){
@@ -826,6 +849,31 @@ onSnapshot(doc(db, "settings", "site"), (snap)=>{
       link.textContent = `WhatsApp: +${WHATSAPP_NUMBER}`;
     }
   }
+
+  if(data.heroEyebrow) document.getElementById("heroEyebrowText").textContent = data.heroEyebrow;
+  if(data.heroTitle) document.getElementById("heroTitleText").textContent = data.heroTitle;
+  if(data.heroSubtitle) document.getElementById("heroSubtitleText").textContent = data.heroSubtitle;
+  if(data.heroImageUrl){
+    document.getElementById("heroBg").style.backgroundImage = `url('${data.heroImageUrl}')`;
+    document.querySelector(".hero").classList.add("has-image");
+  }
+
+  if(data.storyEyebrow) document.getElementById("storyEyebrowText").textContent = data.storyEyebrow;
+  if(data.storyTitle) document.getElementById("storyTitleText").textContent = data.storyTitle;
+  if(data.storyText){
+    const paras = data.storyText.split(/\n\s*\n/).map(p=>p.trim()).filter(Boolean);
+    if(paras.length){
+      document.getElementById("storyParagraphs").innerHTML = paras.map(p=>`<p>${escapeHtml(p)}</p>`).join("");
+    }
+  }
+  if(data.storySign) document.getElementById("storySignText").textContent = data.storySign;
+  if(data.storyImageUrl){
+    document.getElementById("storyVisualBox").innerHTML =
+      `<img src="${data.storyImageUrl}" alt="MALVENS Woman" style="width:100%;height:100%;object-fit:cover;border-radius:6px;">`;
+  }
+
+  if(data.colorAccent) document.documentElement.style.setProperty('--gold', data.colorAccent);
+  if(data.colorSecondary) document.documentElement.style.setProperty('--rose', data.colorSecondary);
 });
 
 /* ---------- Init ---------- */

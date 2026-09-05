@@ -168,6 +168,7 @@
     <div class="tabs">
       <button class="tab-btn active" data-tab="productos">Productos</button>
       <button class="tab-btn" data-tab="marca">Marca (logo)</button>
+      <button class="tab-btn" data-tab="contenido">Contenido y diseño</button>
     </div>
 
     <section class="panel active" id="panel-productos">
@@ -278,6 +279,85 @@
           <button type="button" class="btn" id="saveContactBtn" style="width:auto;">Guardar número</button>
         </div>
         <p class="msg" id="contactMsg"></p>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-contenido">
+      <div class="card">
+        <h2>Portada (inicio)</h2>
+        <div class="field">
+          <label for="heroEyebrowInput">Texto pequeño arriba del título</label>
+          <input type="text" id="heroEyebrowInput" placeholder="@malvenswoman.py">
+        </div>
+        <div class="field">
+          <label for="heroTitleInput">Título principal</label>
+          <input type="text" id="heroTitleInput" placeholder="Piezas que acompañan tu historia">
+          <span style="font-size:0.78rem; color:var(--ink-soft);">Se muestra en texto simple, sin cursiva ni salto de línea especial.</span>
+        </div>
+        <div class="field">
+          <label for="heroSubtitleInput">Texto debajo del título</label>
+          <textarea id="heroSubtitleInput" rows="2" placeholder="Jewelry y accesorios delicados, pensados para..."></textarea>
+        </div>
+        <div class="field">
+          <label>Foto de portada (opcional)</label>
+          <img id="heroImagePreview" class="preview-thumb" style="display:none; width:100%; max-width:320px; height:160px; object-fit:cover; margin-bottom:10px;">
+          <input type="file" id="heroImageInput" accept="image/*">
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn" id="saveHeroBtn" style="width:auto;">Guardar portada</button>
+        </div>
+        <p class="msg" id="heroMsg"></p>
+      </div>
+
+      <div class="card">
+        <h2>Sección "Nosotras"</h2>
+        <div class="field">
+          <label for="storyEyebrowInput">Texto pequeño arriba del título</label>
+          <input type="text" id="storyEyebrowInput" placeholder="Nuestra esencia">
+        </div>
+        <div class="field">
+          <label for="storyTitleInput">Título</label>
+          <input type="text" id="storyTitleInput" placeholder="Delicadeza con carácter">
+        </div>
+        <div class="field">
+          <label for="storyTextInput">Historia de la marca</label>
+          <textarea id="storyTextInput" rows="5" placeholder="Contá la historia de MALVENS acá. Dejá una línea vacía entre párrafos si querés más de uno."></textarea>
+        </div>
+        <div class="field">
+          <label for="storySignInput">Firma (opcional)</label>
+          <input type="text" id="storySignInput" placeholder="— Equipo Malvens">
+        </div>
+        <div class="field">
+          <label>Foto de esta sección (opcional)</label>
+          <img id="storyImagePreview" class="preview-thumb" style="display:none; width:100%; max-width:320px; height:200px; object-fit:cover; margin-bottom:10px;">
+          <input type="file" id="storyImageInput" accept="image/*">
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn" id="saveStoryBtn" style="width:auto;">Guardar sección</button>
+        </div>
+        <p class="msg" id="storyMsg"></p>
+      </div>
+
+      <div class="card">
+        <h2>Colores</h2>
+        <p style="color:var(--ink-soft); font-size:0.88rem; margin-bottom:20px;">
+          Cambiá el tono dorado y el tono rosa que se usan en toda la página. El fondo y el texto se mantienen fijos para que todo se siga leyendo bien.
+        </p>
+        <div class="grid-2">
+          <div class="field">
+            <label for="colorAccentInput">Color principal (dorado)</label>
+            <input type="color" id="colorAccentInput" value="#B08D57">
+          </div>
+          <div class="field">
+            <label for="colorSecondaryInput">Color secundario (rosa)</label>
+            <input type="color" id="colorSecondaryInput" value="#C98F86">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn" id="saveColorsBtn" style="width:auto;">Guardar colores</button>
+          <button type="button" class="btn btn-outline" id="resetColorsBtn" style="width:auto;">Restablecer originales</button>
+        </div>
+        <p class="msg" id="colorsMsg"></p>
       </div>
     </section>
   </main>
@@ -572,6 +652,26 @@ async function loadBranding(){
       if(data.logoUrl) document.getElementById("logoDarkPreview").src = data.logoUrl;
       if(data.logoWhiteUrl) document.getElementById("logoWhitePreview").src = data.logoWhiteUrl;
       if(data.whatsappNumber) document.getElementById("whatsappInput").value = data.whatsappNumber;
+
+      if(data.heroEyebrow) document.getElementById("heroEyebrowInput").value = data.heroEyebrow;
+      if(data.heroTitle) document.getElementById("heroTitleInput").value = data.heroTitle;
+      if(data.heroSubtitle) document.getElementById("heroSubtitleInput").value = data.heroSubtitle;
+      if(data.heroImageUrl){
+        const img = document.getElementById("heroImagePreview");
+        img.src = data.heroImageUrl; img.style.display = "block";
+      }
+
+      if(data.storyEyebrow) document.getElementById("storyEyebrowInput").value = data.storyEyebrow;
+      if(data.storyTitle) document.getElementById("storyTitleInput").value = data.storyTitle;
+      if(data.storyText) document.getElementById("storyTextInput").value = data.storyText;
+      if(data.storySign) document.getElementById("storySignInput").value = data.storySign;
+      if(data.storyImageUrl){
+        const img = document.getElementById("storyImagePreview");
+        img.src = data.storyImageUrl; img.style.display = "block";
+      }
+
+      if(data.colorAccent) document.getElementById("colorAccentInput").value = data.colorAccent;
+      if(data.colorSecondary) document.getElementById("colorSecondaryInput").value = data.colorSecondary;
     }
   }catch(err){ /* keep default preview */ }
 }
@@ -626,6 +726,116 @@ document.getElementById("saveLogosBtn").addEventListener("click", async ()=>{
     logoMsg.classList.add("error");
     logoMsg.textContent = "No se pudo guardar el logo.";
     showToast("Error al guardar el logo", true);
+  }
+});
+
+/* ---------- Contenido y diseño ---------- */
+let pendingHeroImage = null;
+let pendingStoryImage = null;
+
+document.getElementById("heroImageInput").addEventListener("change", (e)=>{
+  pendingHeroImage = e.target.files[0] || null;
+  if(pendingHeroImage){
+    const img = document.getElementById("heroImagePreview");
+    img.src = URL.createObjectURL(pendingHeroImage);
+    img.style.display = "block";
+  }
+});
+document.getElementById("storyImageInput").addEventListener("change", (e)=>{
+  pendingStoryImage = e.target.files[0] || null;
+  if(pendingStoryImage){
+    const img = document.getElementById("storyImagePreview");
+    img.src = URL.createObjectURL(pendingStoryImage);
+    img.style.display = "block";
+  }
+});
+
+document.getElementById("saveHeroBtn").addEventListener("click", async ()=>{
+  const msg = document.getElementById("heroMsg");
+  msg.className = "msg";
+  msg.textContent = "Guardando…";
+  try{
+    const update = {
+      heroEyebrow: document.getElementById("heroEyebrowInput").value.trim(),
+      heroTitle: document.getElementById("heroTitleInput").value.trim(),
+      heroSubtitle: document.getElementById("heroSubtitleInput").value.trim()
+    };
+    if(pendingHeroImage){
+      update.heroImageUrl = await uploadToCloudinary(pendingHeroImage, "malvens/content");
+    }
+    await setDoc(doc(db, "settings", "site"), update, { merge: true });
+    msg.classList.add("ok");
+    msg.textContent = "Portada actualizada.";
+    showToast("Portada actualizada");
+    pendingHeroImage = null;
+  }catch(err){
+    msg.classList.add("error");
+    msg.textContent = "No se pudo guardar la portada.";
+    showToast("Error al guardar la portada", true);
+  }
+});
+
+document.getElementById("saveStoryBtn").addEventListener("click", async ()=>{
+  const msg = document.getElementById("storyMsg");
+  msg.className = "msg";
+  msg.textContent = "Guardando…";
+  try{
+    const update = {
+      storyEyebrow: document.getElementById("storyEyebrowInput").value.trim(),
+      storyTitle: document.getElementById("storyTitleInput").value.trim(),
+      storyText: document.getElementById("storyTextInput").value.trim(),
+      storySign: document.getElementById("storySignInput").value.trim()
+    };
+    if(pendingStoryImage){
+      update.storyImageUrl = await uploadToCloudinary(pendingStoryImage, "malvens/content");
+    }
+    await setDoc(doc(db, "settings", "site"), update, { merge: true });
+    msg.classList.add("ok");
+    msg.textContent = "Sección actualizada.";
+    showToast("Sección \"Nosotras\" actualizada");
+    pendingStoryImage = null;
+  }catch(err){
+    msg.classList.add("error");
+    msg.textContent = "No se pudo guardar la sección.";
+    showToast("Error al guardar la sección", true);
+  }
+});
+
+document.getElementById("saveColorsBtn").addEventListener("click", async ()=>{
+  const msg = document.getElementById("colorsMsg");
+  msg.className = "msg";
+  msg.textContent = "Guardando…";
+  try{
+    const update = {
+      colorAccent: document.getElementById("colorAccentInput").value,
+      colorSecondary: document.getElementById("colorSecondaryInput").value
+    };
+    await setDoc(doc(db, "settings", "site"), update, { merge: true });
+    msg.classList.add("ok");
+    msg.textContent = "Colores actualizados.";
+    showToast("Colores actualizados");
+  }catch(err){
+    msg.classList.add("error");
+    msg.textContent = "No se pudieron guardar los colores.";
+    showToast("Error al guardar los colores", true);
+  }
+});
+
+document.getElementById("resetColorsBtn").addEventListener("click", async ()=>{
+  const msg = document.getElementById("colorsMsg");
+  document.getElementById("colorAccentInput").value = "#B08D57";
+  document.getElementById("colorSecondaryInput").value = "#C98F86";
+  msg.className = "msg";
+  msg.textContent = "Guardando…";
+  try{
+    await setDoc(doc(db, "settings", "site"), { colorAccent: "#B08D57", colorSecondary: "#C98F86" }, { merge: true });
+    msg.classList.add("ok");
+    msg.textContent = "Colores restablecidos a los originales.";
+    showToast("Colores restablecidos");
+  }catch(err){
+    msg.classList.add("error");
+    msg.textContent = "No se pudo restablecer.";
+    showToast("Error al restablecer colores", true);
   }
 });
 </script>
